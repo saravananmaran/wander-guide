@@ -8,18 +8,20 @@ import { PlaceCard } from '@/components/PlaceCard';
 import { SearchFilter } from '@/components/SearchFilter';
 import { MapPlaceholder } from '@/components/MapPlaceholder';
 import { useLocation } from '@/hooks/useLocation';
-import { categories, mockPlaces } from '@/data/mockPlaces';
+import { usePlaces } from '@/hooks/usePlaces';
+import { categories } from '@/data/mockPlaces';
 import { CategoryType, FilterOptions } from '@/types/place';
 
 const Index = () => {
   const { location, loading, error, requestLocation } = useLocation();
+  const { data: allPlaces = [] } = usePlaces();
   const [selectedCategory, setSelectedCategory] = useState<CategoryType | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<FilterOptions>({});
 
   // Filter and sort places
   const filteredPlaces = useMemo(() => {
-    let places = [...mockPlaces];
+    let places = [...allPlaces];
 
     // Filter by category
     if (selectedCategory) {
@@ -63,16 +65,16 @@ const Index = () => {
     }
 
     return places;
-  }, [selectedCategory, searchQuery, filters]);
+  }, [selectedCategory, searchQuery, filters, allPlaces]);
 
   // Count places per category
   const categoryCounts = useMemo(() => {
     const counts: Record<CategoryType, number> = {} as Record<CategoryType, number>;
-    mockPlaces.forEach((place) => {
+    allPlaces.forEach((place) => {
       counts[place.category] = (counts[place.category] || 0) + 1;
     });
     return counts;
-  }, []);
+  }, [allPlaces]);
 
   const handleCategoryClick = (categoryId: CategoryType) => {
     setSelectedCategory(selectedCategory === categoryId ? null : categoryId);
