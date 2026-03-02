@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Compass, Menu, X, Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
@@ -42,7 +44,7 @@ export function Header() {
             <Button variant="ghost" size="icon" className="hidden md:flex">
               <Search className="h-5 w-5" />
             </Button>
-            <Button variant="coral" className="hidden md:flex">
+            <Button variant="coral" className="hidden md:flex" onClick={() => navigate('/auth')}>
               Get Started
             </Button>
             
@@ -89,7 +91,7 @@ export function Header() {
                 Map
               </a>
               <div className="pt-3 border-t border-border">
-                <Button variant="coral" className="w-full">
+                <Button variant="coral" className="w-full" onClick={() => { setMobileMenuOpen(false); navigate('/auth'); }}>
                   Get Started
                 </Button>
               </div>
