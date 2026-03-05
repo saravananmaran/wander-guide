@@ -7,6 +7,7 @@ import { CategoryCard } from '@/components/CategoryCard';
 import { PlaceCard } from '@/components/PlaceCard';
 import { SearchFilter } from '@/components/SearchFilter';
 import { MapPlaceholder } from '@/components/MapPlaceholder';
+import { ChatWidget } from '@/components/ChatWidget';
 import { useLocation } from '@/hooks/useLocation';
 import { usePlaces } from '@/hooks/usePlaces';
 import { categories } from '@/data/mockPlaces';
@@ -203,6 +204,7 @@ const Index = () => {
       </main>
 
       <Footer />
+      <ChatWidget />
     </div>
   );
 };
