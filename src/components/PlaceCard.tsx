@@ -21,46 +21,46 @@ export function PlaceCard({ place, index = 0, onClick }: PlaceCardProps) {
       transition={{ duration: 0.3, delay: index * 0.05 }}
       whileHover={{ y: -4 }}
       onClick={onClick}
-      className="group cursor-pointer"
-    >
+      className="group cursor-pointer">
+      
       <div className="bg-card rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300">
         {/* Image */}
         <div className="relative h-48 overflow-hidden">
           <img
             src={place.image}
             alt={place.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent" />
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+          
+          
           
           {/* Distance badge */}
           <div className="absolute top-3 right-3 bg-card/90 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1.5 text-sm font-medium">
             <Navigation className="h-3.5 w-3.5 text-primary" />
-            {place.distance < 1 
-              ? `${(place.distance * 1000).toFixed(0)}m` 
-              : `${place.distance.toFixed(1)}km`}
+            {place.distance < 1 ?
+            `${(place.distance * 1000).toFixed(0)}m` :
+            `${place.distance.toFixed(1)}km`}
           </div>
 
           {/* Open/Closed status */}
-          {place.isOpen !== undefined && (
-            <div className={cn(
-              'absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-medium',
-              place.isOpen 
-                ? 'bg-teal/90 text-secondary-foreground' 
-                : 'bg-muted text-muted-foreground'
-            )}>
+          {place.isOpen !== undefined &&
+          <div className={cn(
+            'absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-medium',
+            place.isOpen ?
+            'bg-teal/90 text-secondary-foreground' :
+            'bg-muted text-muted-foreground'
+          )}>
               {place.isOpen ? 'Open Now' : 'Closed'}
             </div>
-          )}
+          }
 
           {/* Rating overlay */}
           <div className="absolute bottom-3 left-3">
-            <StarRating 
-              rating={place.rating} 
+            <StarRating
+              rating={place.rating}
               reviewCount={place.reviewCount}
               size="sm"
-              className="bg-card/90 backdrop-blur-sm px-2 py-1 rounded-full"
-            />
+              className="bg-card/90 backdrop-blur-sm px-2 py-1 rounded-full" />
+            
           </div>
         </div>
 
@@ -70,11 +70,11 @@ export function PlaceCard({ place, index = 0, onClick }: PlaceCardProps) {
             <h3 className="font-display font-semibold text-lg leading-tight group-hover:text-primary transition-colors">
               {place.name}
             </h3>
-            {priceLabel && (
-              <span className="text-sm font-medium text-muted-foreground shrink-0">
+            {priceLabel &&
+            <span className="text-sm font-medium text-muted-foreground shrink-0">
                 {priceLabel}
               </span>
-            )}
+            }
           </div>
 
           <p className="text-sm text-muted-foreground flex items-center gap-1.5 mb-3">
@@ -82,28 +82,28 @@ export function PlaceCard({ place, index = 0, onClick }: PlaceCardProps) {
             <span className="truncate">{place.address}</span>
           </p>
 
-          {place.openingHours && (
-            <p className="text-xs text-muted-foreground flex items-center gap-1.5 mb-3">
+          {place.openingHours &&
+          <p className="text-xs text-muted-foreground flex items-center gap-1.5 mb-3">
               <Clock className="h-3 w-3 shrink-0" />
               {place.openingHours}
             </p>
-          )}
+          }
 
-          {place.tags && place.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {place.tags.slice(0, 3).map((tag) => (
-                <Badge 
-                  key={tag} 
-                  variant="secondary" 
-                  className="text-xs px-2 py-0.5 bg-muted text-muted-foreground"
-                >
+          {place.tags && place.tags.length > 0 &&
+          <div className="flex flex-wrap gap-1.5">
+              {place.tags.slice(0, 3).map((tag) =>
+            <Badge
+              key={tag}
+              variant="secondary"
+              className="text-xs px-2 py-0.5 bg-muted text-muted-foreground">
+              
                   {tag}
                 </Badge>
-              ))}
+            )}
             </div>
-          )}
+          }
         </div>
       </div>
-    </motion.div>
-  );
+    </motion.div>);
+
 }
