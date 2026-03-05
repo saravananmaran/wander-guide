@@ -23,7 +23,7 @@ export function Header() {
             <div className="p-2 bg-gradient-to-br from-coral to-sunset rounded-xl">
               <Compass className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="font-display font-bold text-xl">TravelSpot</span>
+            <span className="font-display font-bold text-xl">ChennaiSpot</span>
           </motion.a>
 
           {/* Desktop Navigation */}

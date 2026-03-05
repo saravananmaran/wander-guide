@@ -49,7 +49,7 @@ export function Hero({ location, loading, error, onRequestLocation }: HeroProps)
           >
             Discover{' '}
             <span className="text-gradient">Amazing Places</span>
-            <br />Near You
+            <br />in Chennai
           </motion.h1>
 
           {/* Subtitle */}
@@ -59,7 +59,7 @@ export function Hero({ location, loading, error, onRequestLocation }: HeroProps)
             transition={{ delay: 0.4 }}
             className="text-lg md:text-xl text-muted-foreground mb-8 max-w-xl mx-auto"
           >
-            Find the best hotels, restaurants, attractions, and more — all tailored to your location.
+            Explore the best hotels, restaurants, temples, and more across Chennai — the Gateway to South India.
           </motion.p>
 
           {/* Location Display */}
