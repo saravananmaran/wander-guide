@@ -166,7 +166,7 @@ export const mockPlaces: Place[] = [
     reviewCount: 15000,
     distance: 2.0,
     address: 'Kamarajar Salai, Chennai',
-    image: 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?w=400&h=300&fit=crop',
+    image: '/lovable-uploads/8575b262-ad02-4116-b087-b8b0fd63fc36.jpg',
     isOpen: true,
     openingHours: 'Always Open',
     description: 'Second longest urban beach in the world',
