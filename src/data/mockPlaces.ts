@@ -49,7 +49,7 @@ export const mockPlaces: Place[] = [
     reviewCount: 5600,
     distance: 4.2,
     address: '21 Greams Lane, Off Greams Road, Chennai',
-    image: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=400&h=300&fit=crop',
+    image: '/lovable-uploads/22fa036f-9b8d-4603-88a8-82f815fa8970.webp',
     isOpen: true,
     openingHours: '24 Hours',
     description: 'Premier multi-specialty hospital with world-class care',
