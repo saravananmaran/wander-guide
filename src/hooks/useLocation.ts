@@ -27,8 +27,8 @@ export function useLocation(): UseLocationReturn {
         const { latitude, longitude } = position.coords;
         
         // Try to get city name from reverse geocoding (mock for now)
-        const mockCity = 'San Francisco';
-        const mockCountry = 'United States';
+        const mockCity = 'Chennai';
+        const mockCountry = 'India';
         
         setLocation({
           latitude,
@@ -56,10 +56,10 @@ export function useLocation(): UseLocationReturn {
         
         // Set a default location for demo purposes
         setLocation({
-          latitude: 37.7749,
-          longitude: -122.4194,
-          city: 'San Francisco',
-          country: 'United States',
+          latitude: 13.0827,
+          longitude: 80.2707,
+          city: 'Chennai',
+          country: 'India',
         });
       },
       {
