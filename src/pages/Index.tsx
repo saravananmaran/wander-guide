@@ -6,7 +6,7 @@ import { Footer } from '@/components/Footer';
 import { CategoryCard } from '@/components/CategoryCard';
 import { PlaceCard } from '@/components/PlaceCard';
 import { SearchFilter } from '@/components/SearchFilter';
-import { MapPlaceholder } from '@/components/MapPlaceholder';
+import { InteractiveMap } from '@/components/InteractiveMap';
 import { ChatWidget } from '@/components/ChatWidget';
 import { useLocation } from '@/hooks/useLocation';
 import { usePlaces } from '@/hooks/usePlaces';
@@ -199,7 +199,7 @@ const Index = () => {
             </p>
           </motion.div>
 
-          <MapPlaceholder places={filteredPlaces} className="h-[400px] md:h-[500px]" />
+          <InteractiveMap places={filteredPlaces} userLocation={location} className="h-[400px] md:h-[500px]" />
         </section>
       </main>
 
