@@ -6,6 +6,7 @@ import { Footer } from '@/components/Footer';
 import { CategoryCard } from '@/components/CategoryCard';
 import { PlaceCard } from '@/components/PlaceCard';
 import { SearchFilter } from '@/components/SearchFilter';
+import { SmartSearch, SearchResult } from '@/components/SmartSearch';
 import { InteractiveMap } from '@/components/InteractiveMap';
 import { ChatWidget } from '@/components/ChatWidget';
 import { useLocation } from '@/hooks/useLocation';
@@ -19,17 +20,16 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState<CategoryType | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<FilterOptions>({});
+  const [searchedLocation, setSearchedLocation] = useState<{ lat: number; lng: number; name: string } | null>(null);
 
   // Filter and sort places
   const filteredPlaces = useMemo(() => {
     let places = [...allPlaces];
 
-    // Filter by category
     if (selectedCategory) {
       places = places.filter((p) => p.category === selectedCategory);
     }
 
-    // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       places = places.filter(
@@ -40,17 +40,14 @@ const Index = () => {
       );
     }
 
-    // Filter by max distance
     if (filters.maxDistance) {
       places = places.filter((p) => p.distance <= filters.maxDistance!);
     }
 
-    // Filter by min rating
     if (filters.minRating) {
       places = places.filter((p) => p.rating >= filters.minRating!);
     }
 
-    // Sort
     if (filters.sortBy) {
       switch (filters.sortBy) {
         case 'distance':
@@ -68,7 +65,6 @@ const Index = () => {
     return places;
   }, [selectedCategory, searchQuery, filters, allPlaces]);
 
-  // Count places per category
   const categoryCounts = useMemo(() => {
     const counts: Record<CategoryType, number> = {} as Record<CategoryType, number>;
     allPlaces.forEach((place) => {
@@ -79,6 +75,12 @@ const Index = () => {
 
   const handleCategoryClick = (categoryId: CategoryType) => {
     setSelectedCategory(selectedCategory === categoryId ? null : categoryId);
+  };
+
+  const handleSearchResult = (result: SearchResult) => {
+    setSearchedLocation({ lat: result.lat, lng: result.lon, name: result.name });
+    // Scroll to map
+    document.getElementById('map')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
@@ -93,6 +95,18 @@ const Index = () => {
           error={error}
           onRequestLocation={requestLocation}
         />
+
+        {/* Smart Search Section */}
+        <section className="container mx-auto px-4 -mt-4 mb-8 relative z-10">
+          <SmartSearch
+            searchQuery={searchQuery}
+            onSearchChange={(q) => {
+              setSearchQuery(q);
+              if (!q) setSearchedLocation(null);
+            }}
+            onSelectResult={handleSearchResult}
+          />
+        </section>
 
         {/* Categories Section */}
         <section id="categories" className="container mx-auto px-4 py-12">
@@ -130,7 +144,33 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Search & Filter + Places Section */}
+        {/* Map Section - now above places for better search flow */}
+        <section id="map" className="container mx-auto px-4 py-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-6"
+          >
+            <h2 className="font-display text-2xl md:text-3xl font-bold mb-2">
+              Explore the Map
+            </h2>
+            <p className="text-muted-foreground">
+              {searchedLocation
+                ? `Showing results near ${searchedLocation.name}`
+                : 'See all places at a glance and get directions'}
+            </p>
+          </motion.div>
+
+          <InteractiveMap
+            places={filteredPlaces}
+            userLocation={location}
+            searchedLocation={searchedLocation}
+            className="h-[400px] md:h-[500px]"
+          />
+        </section>
+
+        {/* Places Section */}
         <section id="places" className="container mx-auto px-4 py-8">
           <div className="mb-8">
             <SearchFilter
@@ -181,25 +221,6 @@ const Index = () => {
               </button>
             </motion.div>
           )}
-        </section>
-
-        {/* Map Section */}
-        <section id="map" className="container mx-auto px-4 py-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-8"
-          >
-            <h2 className="font-display text-2xl md:text-3xl font-bold mb-2">
-              Explore the Map
-            </h2>
-            <p className="text-muted-foreground">
-              See all places at a glance and get directions
-            </p>
-          </motion.div>
-
-          <InteractiveMap places={filteredPlaces} userLocation={location} className="h-[400px] md:h-[500px]" />
         </section>
       </main>
 

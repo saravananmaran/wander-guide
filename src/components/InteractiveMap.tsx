@@ -1,11 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Place, UserLocation } from '@/types/place';
 import { cn } from '@/lib/utils';
-import { Navigation2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 // Fix default marker icons for Leaflet + bundlers
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -48,6 +46,26 @@ const placeIcon = new L.DivIcon({
   popupAnchor: [0, -28],
 });
 
+const searchIcon = new L.DivIcon({
+  html: `<div style="
+    width: 32px; height: 32px;
+    background: hsl(0, 84%, 60%);
+    border: 3px solid white;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+    display: flex; align-items: center; justify-content: center;
+  "><div style="
+    width: 10px; height: 10px;
+    background: white;
+    border-radius: 50%;
+  "></div></div>`,
+  className: '',
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+  popupAnchor: [0, -32],
+});
+
 function RecenterMap({ lat, lng }: { lat: number; lng: number }) {
   const map = useMap();
   useEffect(() => {
@@ -59,18 +77,21 @@ function RecenterMap({ lat, lng }: { lat: number; lng: number }) {
 interface InteractiveMapProps {
   places: Place[];
   userLocation: UserLocation | null;
+  searchedLocation?: { lat: number; lng: number; name: string } | null;
   className?: string;
 }
 
-export function InteractiveMap({ places, userLocation, className }: InteractiveMapProps) {
-  const center: [number, number] = userLocation
-    ? [userLocation.latitude, userLocation.longitude]
-    : [13.0827, 80.2707]; // Default Chennai
+export function InteractiveMap({ places, userLocation, searchedLocation, className }: InteractiveMapProps) {
+  const center: [number, number] = searchedLocation
+    ? [searchedLocation.lat, searchedLocation.lng]
+    : userLocation
+      ? [userLocation.latitude, userLocation.longitude]
+      : [13.0827, 80.2707];
 
-  // Generate pseudo lat/lng for places based on distance (spread around user location)
+  // Generate pseudo lat/lng for places based on distance
   const placePositions = places.map((place, i) => {
     const angle = (i / places.length) * 2 * Math.PI + (i * 0.5);
-    const dist = place.distance * 0.009; // rough km to degrees
+    const dist = place.distance * 0.009;
     return {
       place,
       lat: center[0] + Math.cos(angle) * dist,
@@ -82,7 +103,7 @@ export function InteractiveMap({ places, userLocation, className }: InteractiveM
     <div className={cn('rounded-2xl overflow-hidden border border-border shadow-card', className)}>
       <MapContainer
         center={center}
-        zoom={13}
+        zoom={14}
         scrollWheelZoom={true}
         style={{ height: '100%', width: '100%', minHeight: '400px' }}
         className="z-0"
@@ -92,9 +113,10 @@ export function InteractiveMap({ places, userLocation, className }: InteractiveM
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
+        <RecenterMap lat={center[0]} lng={center[1]} />
+
         {userLocation && (
           <>
-            <RecenterMap lat={userLocation.latitude} lng={userLocation.longitude} />
             <Marker position={[userLocation.latitude, userLocation.longitude]} icon={userIcon}>
               <Popup>
                 <div className="text-center">
@@ -114,6 +136,16 @@ export function InteractiveMap({ places, userLocation, className }: InteractiveM
               }}
             />
           </>
+        )}
+
+        {searchedLocation && (
+          <Marker position={[searchedLocation.lat, searchedLocation.lng]} icon={searchIcon}>
+            <Popup>
+              <div className="text-center">
+                <p className="font-semibold text-sm">🔍 {searchedLocation.name}</p>
+              </div>
+            </Popup>
+          </Marker>
         )}
 
         {placePositions.map(({ place, lat, lng }) => (
