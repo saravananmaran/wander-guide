@@ -8,6 +8,28 @@ interface UseLocationReturn {
   requestLocation: () => void;
 }
 
+async function reverseGeocode(lat: number, lon: number): Promise<{ city: string; country: string }> {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1`,
+      {
+        headers: {
+          'Accept-Language': 'en',
+          'User-Agent': 'ChennaiSpot/1.0',
+        },
+      }
+    );
+    if (!response.ok) throw new Error('Geocoding failed');
+    const data = await response.json();
+    const address = data.address || {};
+    const city = address.city || address.town || address.village || address.county || 'Unknown';
+    const country = address.country || 'Unknown';
+    return { city, country };
+  } catch {
+    return { city: 'Chennai', country: 'India' };
+  }
+}
+
 export function useLocation(): UseLocationReturn {
   const [location, setLocation] = useState<UserLocation | null>(null);
   const [loading, setLoading] = useState(false);
@@ -25,20 +47,12 @@ export function useLocation(): UseLocationReturn {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
+        const { city, country } = await reverseGeocode(latitude, longitude);
         
-        // Try to get city name from reverse geocoding (mock for now)
-        const mockCity = 'Chennai';
-        const mockCountry = 'India';
-        
-        setLocation({
-          latitude,
-          longitude,
-          city: mockCity,
-          country: mockCountry,
-        });
+        setLocation({ latitude, longitude, city, country });
         setLoading(false);
       },
-      (err) => {
+      async (err) => {
         let errorMessage = 'Failed to get your location';
         switch (err.code) {
           case err.PERMISSION_DENIED:
@@ -54,7 +68,7 @@ export function useLocation(): UseLocationReturn {
         setError(errorMessage);
         setLoading(false);
         
-        // Set a default location for demo purposes
+        // Default to Chennai
         setLocation({
           latitude: 13.0827,
           longitude: 80.2707,
@@ -65,13 +79,12 @@ export function useLocation(): UseLocationReturn {
       {
         enableHighAccuracy: true,
         timeout: 10000,
-        maximumAge: 300000, // 5 minutes
+        maximumAge: 300000,
       }
     );
   }, []);
 
   useEffect(() => {
-    // Automatically request location on mount
     requestLocation();
   }, [requestLocation]);
 
