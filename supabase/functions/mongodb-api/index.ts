@@ -40,8 +40,8 @@ async function mongoRequest(action: string, body: Record<string, unknown>) {
     body: JSON.stringify({
       dataSource: "Cluster0",
       database: "nearbyplaces",
-      collection: "places",
-      ...body,
+      collection: body._collection || "places",
+      ...Object.fromEntries(Object.entries(body).filter(([k]) => k !== '_collection')),
     }),
   });
 
@@ -213,10 +213,41 @@ serve(async (req) => {
       }
 
       if (action === "find") {
-        const result = await mongoRequest("find", { filter: body.filter || {} });
+        const result = await mongoRequest("find", { filter: body.filter || {}, _collection: body.collection || "places" });
         return new Response(JSON.stringify({ success: true, places: result.documents || [] }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
+      }
+
+      if (action === "saveUser") {
+        const { email, authId, loginAt } = body;
+        if (!email || !authId) {
+          return new Response(JSON.stringify({ error: "email and authId required" }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        // Upsert user in the "users" collection
+        try {
+          const result = await mongoRequest("updateOne", {
+            _collection: "users",
+            filter: { authId },
+            update: {
+              $set: { email, authId, lastLoginAt: loginAt || new Date().toISOString() },
+              $setOnInsert: { createdAt: new Date().toISOString() },
+            },
+            upsert: true,
+          });
+          return new Response(JSON.stringify({ success: true, result }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        } catch (err) {
+          console.error("Failed to save user:", err);
+          return new Response(JSON.stringify({ success: false, error: err.message }), {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
       }
 
       if (action === "insertOne") {
