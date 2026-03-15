@@ -129,7 +129,7 @@ serve(async (req) => {
           {
             name: 'Royal Theatre', category: 'theatres', rating: 4.7,
             reviewCount: 1234, distance: 1.5, address: '100 Arts Avenue',
-            image: 'https://images.unsplash.com/photo-1503095396549-807759245b35?w=400&h=300&fit=crop',
+            image: '/lovable-uploads/652d6815-f601-408a-8f88-d6d8ef338462.webp',
             priceLevel: 3, isOpen: false, openingHours: 'Shows at 7:00 PM & 9:00 PM',
             description: 'Historic theatre featuring world-class performances',
             tags: ['Shows', 'Historic', 'Entertainment'],
