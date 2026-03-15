@@ -78,7 +78,7 @@ export const mockPlaces: Place[] = [
     reviewCount: 4500,
     distance: 2.8,
     address: '8, Thiru Vi Ka Salai, Royapettah, Chennai',
-    image: 'https://images.unsplash.com/photo-1503095396549-807759245b35?w=400&h=300&fit=crop',
+    image: '/lovable-uploads/652d6815-f601-408a-8f88-d6d8ef338462.webp',
     priceLevel: 2,
     isOpen: true,
     openingHours: '9:00 AM - 11:30 PM',
