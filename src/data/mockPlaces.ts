@@ -151,7 +151,7 @@ export const mockPlaces: Place[] = [
     reviewCount: 12000,
     distance: 1.8,
     address: 'T. Nagar, Chennai',
-    image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&h=300&fit=crop',
+    image: '/lovable-uploads/86b38523-7b7a-42e8-b501-28d4238dfc1f.webp',
     priceLevel: 1,
     isOpen: true,
     openingHours: '6:30 AM - 10:30 PM',
