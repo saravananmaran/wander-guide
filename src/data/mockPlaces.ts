@@ -34,7 +34,7 @@ export const mockPlaces: Place[] = [
     reviewCount: 1890,
     distance: 3.6,
     address: 'ITC Grand Chola, Guindy, Chennai',
-    image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop',
+    image: '/32a07ba9-a33b-4bbc-af6c-c37630d78df0.webp',
     priceLevel: 3,
     isOpen: true,
     openingHours: '12:30 PM - 3:00 PM, 7:00 PM - 11:30 PM',
