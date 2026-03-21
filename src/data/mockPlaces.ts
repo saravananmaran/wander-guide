@@ -63,7 +63,7 @@ export const mockPlaces: Place[] = [
     reviewCount: 8900,
     distance: 5.1,
     address: 'Usman Road, T. Nagar, Chennai',
-    image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop',
+    image: '/lovable-uploads/df850093-0ad1-46e5-a205-78f32e53bcc4.webp',
     priceLevel: 2,
     isOpen: true,
     openingHours: '10:00 AM - 9:00 PM',

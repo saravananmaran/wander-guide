@@ -121,7 +121,7 @@ serve(async (req) => {
           {
             name: 'Artisan Market', category: 'shops', rating: 4.5,
             reviewCount: 678, distance: 0.8, address: '56 Creative Lane',
-            image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop',
+            image: '/lovable-uploads/df850093-0ad1-46e5-a205-78f32e53bcc4.webp',
             priceLevel: 2, isOpen: true, openingHours: '9:00 AM - 8:00 PM',
             description: 'Unique handcrafted goods and local souvenirs',
             tags: ['Souvenirs', 'Handmade', 'Local'],
