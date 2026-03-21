@@ -20,7 +20,7 @@ export const mockPlaces: Place[] = [
     reviewCount: 3200,
     distance: 3.5,
     address: '63, Mount Road, Guindy, Chennai',
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop',
+    image: '/lovable-uploads/b79d4a84-c67f-4817-b26f-8879f4ba142d.webp',
     priceLevel: 4,
     isOpen: true,
     description: 'Luxury 5-star hotel inspired by the Chola dynasty',
