@@ -105,7 +105,7 @@ serve(async (req) => {
           {
             name: 'Sunset Bistro', category: 'restaurants', rating: 4.6,
             reviewCount: 892, distance: 0.5, address: '45 Harbor Street',
-            image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop',
+            image: 'https://vveidmngonixyqjicndq.supabase.co/storage/v1/object/public/uploads/32a07ba9-a33b-4bbc-af6c-c37630d78df0.webp',
             priceLevel: 3, isOpen: true, openingHours: '11:00 AM - 10:00 PM',
             description: 'Fine dining with breathtaking sunset views',
             tags: ['Fine Dining', 'Seafood', 'Romantic'],
