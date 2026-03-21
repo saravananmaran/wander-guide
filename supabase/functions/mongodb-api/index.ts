@@ -98,7 +98,7 @@ serve(async (req) => {
           {
             name: 'Grand Marina Hotel', category: 'hotels', rating: 4.8,
             reviewCount: 2341, distance: 0.3, address: '123 Ocean Boulevard',
-            image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop',
+            image: '/lovable-uploads/b79d4a84-c67f-4817-b26f-8879f4ba142d.webp',
             priceLevel: 4, isOpen: true, description: 'Luxury beachfront hotel with stunning ocean views',
             tags: ['Luxury', 'Beachfront', 'Pool', 'Spa'],
           },
