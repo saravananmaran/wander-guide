@@ -169,7 +169,7 @@ serve(async (req) => {
           {
             name: 'Ocean View Café', category: 'restaurants', rating: 4.5,
             reviewCount: 1456, distance: 0.4, address: '78 Coastal Road',
-            image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&h=300&fit=crop',
+            image: '/lovable-uploads/86b38523-7b7a-42e8-b501-28d4238dfc1f.webp',
             priceLevel: 2, isOpen: true, openingHours: '7:00 AM - 9:00 PM',
             description: 'Casual dining with fresh local ingredients',
             tags: ['Casual', 'Breakfast', 'Coffee'],
