@@ -137,7 +137,7 @@ serve(async (req) => {
           {
             name: 'Botanical Gardens', category: 'parks', rating: 4.9,
             reviewCount: 3456, distance: 2.0, address: '200 Nature Walk',
-            image: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=400&h=300&fit=crop',
+            image: '/76d260b2-1c5e-4432-b0a7-1bf2258f7752.webp',
             isOpen: true, openingHours: '6:00 AM - 8:00 PM',
             description: 'Beautiful gardens with rare plant species',
             tags: ['Nature', 'Walking', 'Photography'],
