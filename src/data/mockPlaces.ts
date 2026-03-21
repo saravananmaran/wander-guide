@@ -93,7 +93,7 @@ export const mockPlaces: Place[] = [
     reviewCount: 3100,
     distance: 6.0,
     address: 'Guindy, Chennai',
-    image: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=400&h=300&fit=crop',
+    image: '/76d260b2-1c5e-4432-b0a7-1bf2258f7752.webp',
     isOpen: true,
     openingHours: '9:00 AM - 5:30 PM',
     description: 'One of the smallest national parks in India, home to diverse wildlife',
