@@ -1,57 +1,28 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { MongoClient } from "npm:mongodb@6.12.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-// MongoDB Data API base URL - we'll use the Atlas Data API
-const MONGODB_DATA_API = "https://data.mongodb-api.com/app/data-fediy/endpoint/data/v1";
+let cachedClient: MongoClient | null = null;
 
-async function getMongoClient() {
+async function getDb() {
   const connectionString = Deno.env.get("MONGODB_CONNECTION_STRING");
   if (!connectionString) {
     throw new Error("MONGODB_CONNECTION_STRING not configured");
   }
-  return connectionString;
-}
 
-// Use MongoDB Atlas Data API for serverless access
-async function mongoRequest(action: string, body: Record<string, unknown>) {
-  const connectionString = await getMongoClient();
-  
-  // Parse connection string to extract cluster info
-  const match = connectionString.match(/mongodb\+srv:\/\/([^:]+):([^@]+)@([^/]+)/);
-  if (!match) {
-    throw new Error("Invalid MongoDB connection string format");
+  if (!cachedClient) {
+    cachedClient = new MongoClient(connectionString, {
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
+    });
+    await cachedClient.connect();
   }
 
-  const [, username, password, cluster] = match;
-  
-  // Use the Atlas Data API endpoint
-  const dataApiUrl = `https://${cluster.replace('.mongodb.net', '')}.data.mongodb-api.com/app/data-fediy/endpoint/data/v1/action/${action}`;
-
-  const response = await fetch(dataApiUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "api-key": password, // Atlas Data API key
-    },
-    body: JSON.stringify({
-      dataSource: "Cluster0",
-      database: "nearbyplaces",
-      collection: body._collection || "places",
-      ...Object.fromEntries(Object.entries(body).filter(([k]) => k !== '_collection')),
-    }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("MongoDB API error:", errorText);
-    throw new Error(`MongoDB API error: ${response.status}`);
-  }
-
-  return response.json();
+  return cachedClient.db("nearbyplaces");
 }
 
 serve(async (req) => {
@@ -60,28 +31,19 @@ serve(async (req) => {
   }
 
   try {
-    const url = new URL(req.url);
-    const path = url.pathname.split('/').pop();
-
-    // For now, return mock data and provide seed endpoint
-    // This allows the app to work immediately while MongoDB is being set up
-    
     if (req.method === "GET") {
-      // Return places from MongoDB or fallback to empty
       try {
-        const result = await mongoRequest("find", { filter: {} });
-        return new Response(JSON.stringify({ 
-          success: true, 
-          places: result.documents || [] 
-        }), {
+        const db = await getDb();
+        const places = await db.collection("places").find({}).toArray();
+        return new Response(JSON.stringify({ success: true, places }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       } catch (err) {
-        console.error("MongoDB fetch failed, returning empty:", err);
-        return new Response(JSON.stringify({ 
-          success: true, 
+        console.error("MongoDB fetch failed:", err);
+        return new Response(JSON.stringify({
+          success: true,
           places: [],
-          note: "MongoDB connection not yet configured. Use POST /seed to populate data."
+          note: "MongoDB connection failed. Check your connection string."
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -91,9 +53,9 @@ serve(async (req) => {
     if (req.method === "POST") {
       const body = await req.json();
       const { action } = body;
+      const db = await getDb();
 
       if (action === "seed") {
-        // Seed default places into MongoDB
         const defaultPlaces = [
           {
             name: 'Grand Marina Hotel', category: 'hotels', rating: 4.8,
@@ -193,18 +155,18 @@ serve(async (req) => {
         ];
 
         try {
-          const result = await mongoRequest("insertMany", { documents: defaultPlaces });
-          return new Response(JSON.stringify({ 
-            success: true, 
+          const result = await db.collection("places").insertMany(defaultPlaces);
+          return new Response(JSON.stringify({
+            success: true,
             message: `Seeded ${defaultPlaces.length} places`,
-            result 
+            insertedCount: result.insertedCount,
           }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         } catch (err) {
-          return new Response(JSON.stringify({ 
-            success: false, 
-            error: `Failed to seed: ${err.message}` 
+          return new Response(JSON.stringify({
+            success: false,
+            error: `Failed to seed: ${err.message}`
           }), {
             status: 500,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -213,8 +175,8 @@ serve(async (req) => {
       }
 
       if (action === "find") {
-        const result = await mongoRequest("find", { filter: body.filter || {}, _collection: body.collection || "places" });
-        return new Response(JSON.stringify({ success: true, places: result.documents || [] }), {
+        const docs = await db.collection(body.collection || "places").find(body.filter || {}).toArray();
+        return new Response(JSON.stringify({ success: true, places: docs }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
@@ -227,48 +189,35 @@ serve(async (req) => {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
-        // Upsert user in the "users" collection
-        try {
-          const result = await mongoRequest("updateOne", {
-            _collection: "users",
-            filter: { authId },
-            update: {
-              $set: { email, authId, lastLoginAt: loginAt || new Date().toISOString() },
-              $setOnInsert: { createdAt: new Date().toISOString() },
-            },
-            upsert: true,
-          });
-          return new Response(JSON.stringify({ success: true, result }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        } catch (err) {
-          console.error("Failed to save user:", err);
-          return new Response(JSON.stringify({ success: false, error: err.message }), {
-            status: 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
+        const result = await db.collection("users").updateOne(
+          { authId },
+          {
+            $set: { email, authId, lastLoginAt: loginAt || new Date().toISOString() },
+            $setOnInsert: { createdAt: new Date().toISOString() },
+          },
+          { upsert: true }
+        );
+        return new Response(JSON.stringify({ success: true, result }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
 
       if (action === "insertOne") {
-        const result = await mongoRequest("insertOne", { document: body.document });
+        const result = await db.collection("places").insertOne(body.document);
         return new Response(JSON.stringify({ success: true, result }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
       if (action === "updateOne") {
-        const result = await mongoRequest("updateOne", { 
-          filter: body.filter, 
-          update: body.update 
-        });
+        const result = await db.collection("places").updateOne(body.filter, body.update);
         return new Response(JSON.stringify({ success: true, result }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
       if (action === "deleteOne") {
-        const result = await mongoRequest("deleteOne", { filter: body.filter });
+        const result = await db.collection("places").deleteOne(body.filter);
         return new Response(JSON.stringify({ success: true, result }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
