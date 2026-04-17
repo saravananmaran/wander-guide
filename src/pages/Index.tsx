@@ -9,6 +9,7 @@ import { SearchFilter } from '@/components/SearchFilter';
 import { SmartSearch, SearchResult } from '@/components/SmartSearch';
 import { InteractiveMap } from '@/components/InteractiveMap';
 import { ChatWidget } from '@/components/ChatWidget';
+import { RideCompare } from '@/components/RideCompare';
 import { useLocation } from '@/hooks/useLocation';
 import { usePlaces } from '@/hooks/usePlaces';
 import { categories } from '@/data/mockPlaces';
@@ -142,6 +143,17 @@ const Index = () => {
               </motion.div>
             ))}
           </div>
+        </section>
+
+        {/* Ride Comparison Section */}
+        <section id="rides" className="container mx-auto px-4 py-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <RideCompare />
+          </motion.div>
         </section>
 
         {/* Map Section - now above places for better search flow */}
