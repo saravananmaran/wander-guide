@@ -164,7 +164,6 @@ export function RideCompare() {
             />
           </div>
         </div>
-        </div>
 
         <Button
           variant="hero"
