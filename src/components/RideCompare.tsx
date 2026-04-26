@@ -2,12 +2,12 @@ import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Bike, Car, Clock, IndianRupee, MapPin, ArrowRight, Loader2, Navigation } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useLocation } from '@/hooks/useLocation';
 import { toast } from 'sonner';
+import { LocationAutocomplete, type LocationSuggestion } from './LocationAutocomplete';
 
 type RideOption = {
   provider: 'Rapido' | 'Uber';
