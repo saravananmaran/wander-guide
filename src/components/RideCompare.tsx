@@ -143,24 +143,27 @@ export function RideCompare() {
               <MapPin className="h-3 w-3 text-teal" /> Pickup{' '}
               <span className="text-xs text-muted-foreground">(leave blank to use current location)</span>
             </Label>
-            <Input
+            <LocationAutocomplete
               id="pickup"
               placeholder="e.g. MG Road, T Nagar"
               value={pickup}
-              onChange={(e) => setPickup(e.target.value)}
+              onChange={(v) => { setPickup(v); setPickupCoords(null); }}
+              onSelect={(s: LocationSuggestion) => setPickupCoords({ lat: s.lat, lon: s.lon })}
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="drop" className="flex items-center gap-1">
               <MapPin className="h-3 w-3 text-coral" /> Drop
             </Label>
-            <Input
+            <LocationAutocomplete
               id="drop"
               placeholder="e.g. Chennai Airport"
               value={drop}
-              onChange={(e) => setDrop(e.target.value)}
+              onChange={(v) => { setDrop(v); setDropCoords(null); }}
+              onSelect={(s: LocationSuggestion) => setDropCoords({ lat: s.lat, lon: s.lon })}
             />
           </div>
+        </div>
         </div>
 
         <Button
