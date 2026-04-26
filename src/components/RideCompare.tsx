@@ -83,18 +83,20 @@ export function RideCompare() {
     setLoading(true);
     setDistance(null);
     try {
-      let pickupCoords: { lat: number; lon: number } | null = null;
+      let pCoords: { lat: number; lon: number } | null = pickupCoords;
       if (pickup.trim()) {
-        const g = await geocode(pickup);
-        if (!g) {
-          toast.error('Could not find pickup location');
-          setLoading(false);
-          return;
+        if (!pCoords) {
+          const g = await geocode(pickup);
+          if (!g) {
+            toast.error('Could not find pickup location');
+            setLoading(false);
+            return;
+          }
+          pCoords = { lat: g.lat, lon: g.lon };
         }
-        pickupCoords = { lat: g.lat, lon: g.lon };
         setUsedCurrentLocation(false);
       } else if (location) {
-        pickupCoords = { lat: location.latitude, lon: location.longitude };
+        pCoords = { lat: location.latitude, lon: location.longitude };
         setUsedCurrentLocation(true);
       } else {
         toast.error('Enter a pickup or enable location');
@@ -102,15 +104,18 @@ export function RideCompare() {
         return;
       }
 
-      const dropG = await geocode(drop);
-      if (!dropG) {
-        toast.error('Could not find drop location');
-        setLoading(false);
-        return;
+      let dCoords = dropCoords;
+      if (!dCoords) {
+        const dropG = await geocode(drop);
+        if (!dropG) {
+          toast.error('Could not find drop location');
+          setLoading(false);
+          return;
+        }
+        dCoords = { lat: dropG.lat, lon: dropG.lon };
       }
 
-      const km = haversineKm(pickupCoords, { lat: dropG.lat, lon: dropG.lon });
-      // Add 20% buffer for road routing vs straight-line
+      const km = haversineKm(pCoords, dCoords);
       const adjusted = Math.max(0.5, +(km * 1.2).toFixed(1));
       setDistance(adjusted);
     } catch (e) {
