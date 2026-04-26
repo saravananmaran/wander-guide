@@ -62,6 +62,8 @@ export function RideCompare() {
   const { location } = useLocation();
   const [pickup, setPickup] = useState('');
   const [drop, setDrop] = useState('');
+  const [pickupCoords, setPickupCoords] = useState<{ lat: number; lon: number } | null>(null);
+  const [dropCoords, setDropCoords] = useState<{ lat: number; lon: number } | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [usedCurrentLocation, setUsedCurrentLocation] = useState(false);
