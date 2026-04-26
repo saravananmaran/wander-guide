@@ -8,21 +8,6 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-const saveUserToMongo = async (email: string, authId: string) => {
-  try {
-    await supabase.functions.invoke('mongodb-api', {
-      body: {
-        action: 'saveUser',
-        email,
-        authId,
-        loginAt: new Date().toISOString(),
-      },
-    });
-  } catch (err) {
-    console.error('Failed to save user to MongoDB:', err);
-  }
-};
-
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -38,9 +23,8 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        if (data.user) await saveUserToMongo(email, data.user.id);
         toast({ title: 'Welcome back!', description: 'You have been signed in.' });
         navigate('/');
       } else {
