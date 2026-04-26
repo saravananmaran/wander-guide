@@ -2,12 +2,12 @@ import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Bike, Car, Clock, IndianRupee, MapPin, ArrowRight, Loader2, Navigation } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useLocation } from '@/hooks/useLocation';
 import { toast } from 'sonner';
+import { LocationAutocomplete, type LocationSuggestion } from './LocationAutocomplete';
 
 type RideOption = {
   provider: 'Rapido' | 'Uber';
@@ -62,6 +62,8 @@ export function RideCompare() {
   const { location } = useLocation();
   const [pickup, setPickup] = useState('');
   const [drop, setDrop] = useState('');
+  const [pickupCoords, setPickupCoords] = useState<{ lat: number; lon: number } | null>(null);
+  const [dropCoords, setDropCoords] = useState<{ lat: number; lon: number } | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [usedCurrentLocation, setUsedCurrentLocation] = useState(false);
@@ -81,18 +83,20 @@ export function RideCompare() {
     setLoading(true);
     setDistance(null);
     try {
-      let pickupCoords: { lat: number; lon: number } | null = null;
+      let pCoords: { lat: number; lon: number } | null = pickupCoords;
       if (pickup.trim()) {
-        const g = await geocode(pickup);
-        if (!g) {
-          toast.error('Could not find pickup location');
-          setLoading(false);
-          return;
+        if (!pCoords) {
+          const g = await geocode(pickup);
+          if (!g) {
+            toast.error('Could not find pickup location');
+            setLoading(false);
+            return;
+          }
+          pCoords = { lat: g.lat, lon: g.lon };
         }
-        pickupCoords = { lat: g.lat, lon: g.lon };
         setUsedCurrentLocation(false);
       } else if (location) {
-        pickupCoords = { lat: location.latitude, lon: location.longitude };
+        pCoords = { lat: location.latitude, lon: location.longitude };
         setUsedCurrentLocation(true);
       } else {
         toast.error('Enter a pickup or enable location');
@@ -100,15 +104,18 @@ export function RideCompare() {
         return;
       }
 
-      const dropG = await geocode(drop);
-      if (!dropG) {
-        toast.error('Could not find drop location');
-        setLoading(false);
-        return;
+      let dCoords = dropCoords;
+      if (!dCoords) {
+        const dropG = await geocode(drop);
+        if (!dropG) {
+          toast.error('Could not find drop location');
+          setLoading(false);
+          return;
+        }
+        dCoords = { lat: dropG.lat, lon: dropG.lon };
       }
 
-      const km = haversineKm(pickupCoords, { lat: dropG.lat, lon: dropG.lon });
-      // Add 20% buffer for road routing vs straight-line
+      const km = haversineKm(pCoords, dCoords);
       const adjusted = Math.max(0.5, +(km * 1.2).toFixed(1));
       setDistance(adjusted);
     } catch (e) {
@@ -136,22 +143,24 @@ export function RideCompare() {
               <MapPin className="h-3 w-3 text-teal" /> Pickup{' '}
               <span className="text-xs text-muted-foreground">(leave blank to use current location)</span>
             </Label>
-            <Input
+            <LocationAutocomplete
               id="pickup"
               placeholder="e.g. MG Road, T Nagar"
               value={pickup}
-              onChange={(e) => setPickup(e.target.value)}
+              onChange={(v) => { setPickup(v); setPickupCoords(null); }}
+              onSelect={(s: LocationSuggestion) => setPickupCoords({ lat: s.lat, lon: s.lon })}
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="drop" className="flex items-center gap-1">
               <MapPin className="h-3 w-3 text-coral" /> Drop
             </Label>
-            <Input
+            <LocationAutocomplete
               id="drop"
               placeholder="e.g. Chennai Airport"
               value={drop}
-              onChange={(e) => setDrop(e.target.value)}
+              onChange={(v) => { setDrop(v); setDropCoords(null); }}
+              onSelect={(s: LocationSuggestion) => setDropCoords({ lat: s.lat, lon: s.lon })}
             />
           </div>
         </div>
