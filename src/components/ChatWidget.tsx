@@ -245,17 +245,13 @@ export function ChatWidget() {
 
             {/* Messages */}
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
-              {!userId && (
-                <div className="text-center text-muted-foreground text-sm py-8">
-                  <Bot className="h-10 w-10 mx-auto mb-3 opacity-40" />
-                  <p>Sign in to chat and save your history.</p>
-                </div>
-              )}
-              {userId && messages.length === 0 && (
+              {messages.length === 0 && (
                 <div className="text-center text-muted-foreground text-sm py-8">
                   <Bot className="h-10 w-10 mx-auto mb-3 opacity-40" />
                   <p>Ask me anything about Chennai!</p>
-                  <p className="text-xs mt-1">Restaurants, places, directions…</p>
+                  <p className="text-xs mt-1">
+                    {userId ? 'Restaurants, places, directions…' : 'Sign in to save your chat history.'}
+                  </p>
                 </div>
               )}
               {messages.map((msg, i) => (
