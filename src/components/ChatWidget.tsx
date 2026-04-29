@@ -298,11 +298,11 @@ export function ChatWidget() {
                 <input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder={userId ? "Ask about Chennai..." : "Sign in to chat"}
+                  placeholder="Ask about Chennai..."
                   className="flex-1 rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral/50 disabled:opacity-50"
-                  disabled={loading || !userId}
+                  disabled={loading}
                 />
-                <Button type="submit" variant="coral" size="icon" disabled={loading || !input.trim() || !userId} className="rounded-xl shrink-0">
+                <Button type="submit" variant="coral" size="icon" disabled={loading || !input.trim()} className="rounded-xl shrink-0">
                   <Send className="h-4 w-4" />
                 </Button>
               </form>
