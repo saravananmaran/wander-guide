@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Send, Loader2, Bot, User } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, Bot, User, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 type Message = { role: 'user' | 'assistant'; content: string };
 
@@ -72,19 +74,102 @@ export function ChatWidget() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
+
+  // Track auth state
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUserId(session?.user?.id ?? null);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setUserId(session?.user?.id ?? null);
+      if (!session?.user) {
+        setMessages([]);
+        setConversationId(null);
+      }
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  // Load latest conversation when opened
+  useEffect(() => {
+    if (!open || !userId) return;
+    (async () => {
+      const { data: convs } = await supabase
+        .from('chat_conversations')
+        .select('id')
+        .eq('user_id', userId)
+        .order('updated_at', { ascending: false })
+        .limit(1);
+
+      let convId = convs?.[0]?.id;
+      if (!convId) {
+        const { data: newConv, error } = await supabase
+          .from('chat_conversations')
+          .insert({ user_id: userId, title: 'Chennai Chat' })
+          .select('id')
+          .single();
+        if (error) { console.error(error); return; }
+        convId = newConv.id;
+      }
+      setConversationId(convId);
+
+      const { data: msgs } = await supabase
+        .from('chat_messages')
+        .select('role, content')
+        .eq('conversation_id', convId)
+        .order('created_at', { ascending: true });
+
+      if (msgs) setMessages(msgs.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })));
+    })();
+  }, [open, userId]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages]);
 
+  const persistMessage = async (role: 'user' | 'assistant', content: string) => {
+    if (!userId || !conversationId) return;
+    await supabase.from('chat_messages').insert({
+      conversation_id: conversationId,
+      user_id: userId,
+      role,
+      content,
+    });
+    await supabase
+      .from('chat_conversations')
+      .update({ updated_at: new Date().toISOString() })
+      .eq('id', conversationId);
+  };
+
+  const clearHistory = async () => {
+    if (!conversationId) return;
+    await supabase.from('chat_messages').delete().eq('conversation_id', conversationId);
+    setMessages([]);
+    toast({ title: 'Chat history cleared' });
+  };
+
   const send = async () => {
     const text = input.trim();
     if (!text || loading) return;
+
+    if (!userId) {
+      toast({
+        title: 'Sign in required',
+        description: 'Please sign in to chat and save your history.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setInput('');
     const userMsg: Message = { role: 'user', content: text };
     setMessages(prev => [...prev, userMsg]);
     setLoading(true);
+    persistMessage('user', text);
 
     let assistantSoFar = '';
     const upsert = (chunk: string) => {
@@ -102,7 +187,10 @@ export function ChatWidget() {
       await streamChat({
         messages: [...messages, userMsg],
         onDelta: upsert,
-        onDone: () => setLoading(false),
+        onDone: () => {
+          setLoading(false);
+          if (assistantSoFar) persistMessage('assistant', assistantSoFar);
+        },
         onError: (err) => {
           upsert(`⚠️ ${err}`);
           setLoading(false);
@@ -152,14 +240,27 @@ export function ChatWidget() {
                 <Bot className="h-5 w-5" />
                 <span className="font-display font-bold">ChennaiSpot AI</span>
               </div>
-              <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-white/20 h-8 w-8" onClick={() => setOpen(false)}>
-                <X className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-1">
+                {userId && messages.length > 0 && (
+                  <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-white/20 h-8 w-8" onClick={clearHistory} title="Clear history">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+                <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-white/20 h-8 w-8" onClick={() => setOpen(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
 
             {/* Messages */}
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
-              {messages.length === 0 && (
+              {!userId && (
+                <div className="text-center text-muted-foreground text-sm py-8">
+                  <Bot className="h-10 w-10 mx-auto mb-3 opacity-40" />
+                  <p>Sign in to chat and save your history.</p>
+                </div>
+              )}
+              {userId && messages.length === 0 && (
                 <div className="text-center text-muted-foreground text-sm py-8">
                   <Bot className="h-10 w-10 mx-auto mb-3 opacity-40" />
                   <p>Ask me anything about Chennai!</p>
@@ -210,11 +311,11 @@ export function ChatWidget() {
                 <input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask about Chennai..."
-                  className="flex-1 rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral/50"
-                  disabled={loading}
+                  placeholder={userId ? "Ask about Chennai..." : "Sign in to chat"}
+                  className="flex-1 rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral/50 disabled:opacity-50"
+                  disabled={loading || !userId}
                 />
-                <Button type="submit" variant="coral" size="icon" disabled={loading || !input.trim()} className="rounded-xl shrink-0">
+                <Button type="submit" variant="coral" size="icon" disabled={loading || !input.trim() || !userId} className="rounded-xl shrink-0">
                   <Send className="h-4 w-4" />
                 </Button>
               </form>
