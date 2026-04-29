@@ -156,20 +156,11 @@ export function ChatWidget() {
     const text = input.trim();
     if (!text || loading) return;
 
-    if (!userId) {
-      toast({
-        title: 'Sign in required',
-        description: 'Please sign in to chat and save your history.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setInput('');
     const userMsg: Message = { role: 'user', content: text };
     setMessages(prev => [...prev, userMsg]);
     setLoading(true);
-    persistMessage('user', text);
+    if (userId) persistMessage('user', text);
 
     let assistantSoFar = '';
     const upsert = (chunk: string) => {
@@ -189,7 +180,7 @@ export function ChatWidget() {
         onDelta: upsert,
         onDone: () => {
           setLoading(false);
-          if (assistantSoFar) persistMessage('assistant', assistantSoFar);
+          if (assistantSoFar && userId) persistMessage('assistant', assistantSoFar);
         },
         onError: (err) => {
           upsert(`⚠️ ${err}`);
@@ -254,17 +245,13 @@ export function ChatWidget() {
 
             {/* Messages */}
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
-              {!userId && (
-                <div className="text-center text-muted-foreground text-sm py-8">
-                  <Bot className="h-10 w-10 mx-auto mb-3 opacity-40" />
-                  <p>Sign in to chat and save your history.</p>
-                </div>
-              )}
-              {userId && messages.length === 0 && (
+              {messages.length === 0 && (
                 <div className="text-center text-muted-foreground text-sm py-8">
                   <Bot className="h-10 w-10 mx-auto mb-3 opacity-40" />
                   <p>Ask me anything about Chennai!</p>
-                  <p className="text-xs mt-1">Restaurants, places, directions…</p>
+                  <p className="text-xs mt-1">
+                    {userId ? 'Restaurants, places, directions…' : 'Sign in to save your chat history.'}
+                  </p>
                 </div>
               )}
               {messages.map((msg, i) => (
@@ -311,11 +298,11 @@ export function ChatWidget() {
                 <input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder={userId ? "Ask about Chennai..." : "Sign in to chat"}
+                  placeholder="Ask about Chennai..."
                   className="flex-1 rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral/50 disabled:opacity-50"
-                  disabled={loading || !userId}
+                  disabled={loading}
                 />
-                <Button type="submit" variant="coral" size="icon" disabled={loading || !input.trim() || !userId} className="rounded-xl shrink-0">
+                <Button type="submit" variant="coral" size="icon" disabled={loading || !input.trim()} className="rounded-xl shrink-0">
                   <Send className="h-4 w-4" />
                 </Button>
               </form>
