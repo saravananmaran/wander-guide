@@ -156,20 +156,11 @@ export function ChatWidget() {
     const text = input.trim();
     if (!text || loading) return;
 
-    if (!userId) {
-      toast({
-        title: 'Sign in required',
-        description: 'Please sign in to chat and save your history.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setInput('');
     const userMsg: Message = { role: 'user', content: text };
     setMessages(prev => [...prev, userMsg]);
     setLoading(true);
-    persistMessage('user', text);
+    if (userId) persistMessage('user', text);
 
     let assistantSoFar = '';
     const upsert = (chunk: string) => {
