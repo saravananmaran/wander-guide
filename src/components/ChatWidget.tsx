@@ -180,7 +180,7 @@ export function ChatWidget() {
         onDelta: upsert,
         onDone: () => {
           setLoading(false);
-          if (assistantSoFar) persistMessage('assistant', assistantSoFar);
+          if (assistantSoFar && userId) persistMessage('assistant', assistantSoFar);
         },
         onError: (err) => {
           upsert(`⚠️ ${err}`);
